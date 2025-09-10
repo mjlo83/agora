@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agora MVP</title>
+    <title>Agora MVP - Enhanced v2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -40,14 +40,33 @@
         .notification {
             animation: slide-in-out 4s ease-in-out forwards;
         }
+        /* For scrollable filter pills */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        /* For Farm Profile Accordion */
+        .accordion-content .product-grid {
+            max-height: 18rem; /* Approx height of one row with padding */
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .accordion-content.expanded .product-grid {
+             max-height: 2000px; /* Large value to allow full expansion */
+        }
+        .accordion-content.expanded .horizontal-scroll-wrapper {
+            display: none;
+        }
+        .accordion-content:not(.expanded) .grid-view-wrapper {
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
-    <!-- Notification Area -->
-    <div id="notification-area" class="fixed top-5 right-5 z-50"></div>
-
-    <!-- Main Navigation -->
     <nav class="bg-white shadow-md sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
@@ -60,8 +79,8 @@
                     <div id="desktop-nav-links" class="ml-10 flex items-baseline space-x-4">
                         <a href="#" class="nav-link text-gray-600 hover:bg-green-600 hover:text-white px-3 py-2 rounded-md text-sm font-medium" onclick="app.navigateTo('marketplace'); return false;">Marketplace</a>
                         <a href="#" class="nav-link text-gray-600 hover:bg-green-600 hover:text-white px-3 py-2 rounded-md text-sm font-medium" onclick="app.navigateTo('events'); return false;">Events</a>
-                        <a href="#" class="nav-link text-gray-600 hover:bg-green-600 hover:text-white px-3 py-2 rounded-md text-sm font-medium" onclick="app.navigateTo('farmer-login'); return false;">Farmer Portal</a>
-                        <a id="nav-account-link" href="#" class="nav-link text-gray-600 hover:bg-green-600 hover:text-white px-3 py-2 rounded-md text-sm font-medium" onclick="app.handleAccountClick(); return false;">Login</a>
+                        <a id="nav-profile-link" href="#" class="nav-link text-gray-600 hover:bg-green-600 hover:text-white px-3 py-2 rounded-md text-sm font-medium" onclick="app.handleProfileClick(); return false;">Login</a>
+                        <a id="nav-farmer-link" href="#" class="nav-link text-gray-600 hover:bg-green-600 hover:text-white px-3 py-2 rounded-md text-sm font-medium" onclick="app.navigateTo('farmer-login'); return false;">Farmer Portal</a>
                         <a href="#" class="relative text-gray-600 hover:bg-green-600 hover:text-white px-3 py-2 rounded-md text-sm font-medium" onclick="app.navigateTo('cart'); return false;">
                             <span>Cart</span>
                             <span id="cart-item-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
@@ -77,18 +96,19 @@
             <div id="mobile-nav-links" class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
                  <a href="#" class="text-gray-600 hover:bg-green-600 hover:text-white block px-3 py-2 rounded-md text-base font-medium" onclick="app.navigateTo('marketplace'); return false;">Marketplace</a>
                  <a href="#" class="text-gray-600 hover:bg-green-600 hover:text-white block px-3 py-2 rounded-md text-base font-medium" onclick="app.navigateTo('events'); return false;">Events</a>
+                <a id="mobile-nav-profile-link" href="#" class="text-gray-600 hover:bg-green-600 hover:text-white block px-3 py-2 rounded-md text-base font-medium" onclick="app.handleProfileClick(); return false;">Login</a>
                 <a href="#" class="text-gray-600 hover:bg-green-600 hover:text-white block px-3 py-2 rounded-md text-base font-medium" onclick="app.navigateTo('farmer-login'); return false;">Farmer Portal</a>
-                <a id="mobile-nav-account-link" href="#" class="text-gray-600 hover:bg-green-600 hover:text-white block px-3 py-2 rounded-md text-base font-medium" onclick="app.handleAccountClick(); return false;">Login</a>
                 <a href="#" class="relative text-gray-600 hover:bg-green-600 hover:text-white block px-3 py-2 rounded-md text-base font-medium" onclick="app.navigateTo('cart'); return false;">
                     <span>Cart</span><span id="mobile-cart-item-count" class="ml-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 inline-flex items-center justify-center">0</span>
                 </a>
             </div>
         </div>
     </nav>
+    
+    <div id="notification-area" class="fixed top-[64px] left-0 right-0 z-50 pointer-events-none p-4 flex justify-center"></div>
 
     <main>
-        <!-- Home Page -->
-        <div id="home-page" class="page active">
+        <div id="home-page" class="page">
             <div class="relative bg-white overflow-hidden">
                 <div class="max-w-7xl mx-auto">
                     <div class="relative z-10 pb-8 bg-white sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">
@@ -108,7 +128,33 @@
             </div>
         </div>
 
-        <!-- Farmer Login Page -->
+        <div id="welcome-page" class="page active">
+            <div class="min-h-[calc(100vh-64px)] bg-cover bg-center flex items-center justify-center" style="background-image: url('https://images.unsplash.com/photo-1518635017435-74a03759d4a4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');">
+                <div class="bg-black bg-opacity-50 p-12 rounded-lg text-center text-white max-w-2xl mx-4">
+                    <h1 class="text-5xl font-extrabold mb-4">Welcome to Agora</h1>
+                    <p class="text-xl mb-8">Your connection to the freshest food, straight from local farms to your table.</p>
+                    <button onclick="app.navigateTo('user-details-form')" class="w-full sm:w-auto flex items-center justify-center px-10 py-4 border border-transparent text-lg font-medium rounded-md text-white bg-green-600 hover:bg-green-700">Shop Local Now</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="user-details-form-page" class="page">
+            <div class="min-h-[calc(100vh-64px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+                <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
+                    <div>
+                        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Create Your Profile</h2>
+                        <p class="mt-2 text-center text-sm text-gray-600">Just a few details to get you started.</p>
+                    </div>
+                    <form id="user-details-form" class="mt-8 space-y-6">
+                        <div><label for="user-fullname" class="sr-only">Full Name</label><input id="user-fullname" type="text" required class="block w-full rounded-md p-3" placeholder="Full Name"></div>
+                        <div><label for="user-address" class="sr-only">Delivery Address</label><input id="user-address" type="text" required class="block w-full rounded-md p-3" placeholder="Primary Delivery Address"></div>
+                        <div><label for="user-contact" class="sr-only">Email or Phone</label><input id="user-contact" type="text" required class="block w-full rounded-md p-3" placeholder="Email or Phone Number"></div>
+                        <div><button type="submit" class="group relative w-full flex justify-center py-3 px-4 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">Start Shopping</button></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <div id="farmer-login-page" class="page">
             <div class="min-h-[calc(100vh-64px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
                 <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
@@ -123,14 +169,65 @@
             </div>
         </div>
         
-        <!-- Farmer Dashboard Page -->
         <div id="farmer-dashboard-page" class="page">
             <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                 <div id="farmer-dashboard-content" class="px-4 py-6 sm:px-0"></div>
             </div>
         </div>
+        
+        <div id="delivery-portal-page" class="page">
+             <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-6">Delivery Management</h1>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-xl font-semibold mb-4">Delivery Settings</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="delivery-day" class="block text-sm font-medium text-gray-700">Grouped Delivery Day</label>
+                                <select id="delivery-day" class="mt-1 block w-full rounded-md">
+                                    <option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option selected>Friday</option><option>Saturday</option><option>Sunday</option>
+                                </select>
+                            </div>
+                            <button onclick="app.saveDeliverySettings()" class="w-full bg-green-600 text-white py-2 px-4 rounded-md">Save Settings</button>
+                        </div>
+                    </div>
+                     <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-xl font-semibold mb-4">Driver Tools</h2>
+                        <p class="text-gray-600 mb-4">Access the driver portal to view and manage upcoming deliveries.</p>
+                        <button onclick="app.navigateTo('driver-view')" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md">Open Driver View</button>
+                    </div>
+                     <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-xl font-semibold mb-4">Archive</h2>
+                        <p class="text-gray-600 mb-4">Review past routes and completed deliveries for your records.</p>
+                        <button onclick="app.navigateTo('delivery-archive')" class="w-full bg-gray-600 text-white py-2 px-4 rounded-md">View Archived Deliveries</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="driver-view-page" class="page">
+            <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <h1 class="text-3xl font-bold text-gray-900">Upcoming Deliveries</h1>
+                    <div class="flex space-x-2">
+                        <button onclick="app.sortDeliveries('route')" class="bg-gray-200 px-4 py-2 rounded-md text-sm font-medium">Sort by Fastest Route</button>
+                        <button onclick="app.sortDeliveries('efficiency')" class="bg-gray-200 px-4 py-2 rounded-md text-sm font-medium">Sort by Efficiency</button>
+                    </div>
+                </div>
+                <div id="driver-delivery-list" class="space-y-4"></div>
+            </div>
+        </div>
+        
+        <div id="delivery-archive-page" class="page">
+             <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <h1 class="text-3xl font-bold text-gray-900">Archived Deliveries</h1>
+                    <div id="archive-view-toggles" class="flex space-x-2 bg-gray-200 p-1 rounded-lg"></div>
+                </div>
+                <div id="delivery-archive-list" class="space-y-4"></div>
+            </div>
+        </div>
 
-        <!-- Farmer Profile Edit Page -->
         <div id="farmer-profile-edit-page" class="page">
              <div class="max-w-3xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
                 <h1 class="text-3xl font-bold text-gray-900 mb-6">Edit Farm Profile</h1>
@@ -138,12 +235,10 @@
             </div>
         </div>
 
-        <!-- Farm Profile View Page -->
         <div id="farm-profile-page" class="page">
-            <div id="farm-profile-content" class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8"></div>
+            <div id="farm-profile-content" class="max-w-7xl mx-auto"></div>
         </div>
         
-        <!-- Add/Edit Product Page -->
         <div id="add-product-page" class="page">
             <div class="max-w-3xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
                 <h1 id="product-form-title" class="text-3xl font-bold text-gray-900 mb-6">Add a New Product</h1>
@@ -151,19 +246,17 @@
             </div>
         </div>
 
-        <!-- Marketplace Page -->
         <div id="marketplace-page" class="page">
             <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
                 <div class="text-center mb-8">
                     <h1 class="text-4xl font-extrabold text-gray-900">Marketplace</h1>
                     <p class="mt-2 text-lg text-gray-600">Fresh, local food directly from the source.</p>
                 </div>
-                <div id="marketplace-filters" class="mb-6 p-4 bg-white rounded-lg shadow-sm flex flex-col md:flex-row gap-4 items-center sticky top-[65px] z-30"></div>
+                <div id="marketplace-filters" class="mb-6 p-4 bg-white rounded-lg shadow-sm sticky top-[65px] z-30 space-y-4"></div>
                 <div id="marketplace-farm-list" class="space-y-8"></div>
             </div>
         </div>
 
-        <!-- Events Page -->
         <div id="events-page" class="page">
             <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
                 <div class="text-center mb-10"><h1 class="text-4xl font-extrabold tracking-tight text-gray-900">Upcoming Events</h1><p class="mt-3 max-w-2xl mx-auto text-xl text-gray-500">Connect with your local food community.</p></div>
@@ -172,8 +265,17 @@
             </div>
         </div>
 
-        <!-- My Account, Cart, Order Confirmation Pages -->
-        <div id="account-page" class="page"><div class="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8"><h1 class="text-3xl font-bold text-gray-900 mb-6">My Account</h1><div class="bg-white p-6 rounded-lg shadow-md"><h2 class="text-xl font-semibold mb-4">Order History</h2><div id="order-history-container" class="space-y-6"></div></div></div></div>
+        <div id="account-page" class="page">
+            <div class="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-6">My Profile</h1>
+                <div class="space-y-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md"><h2 class="text-xl font-semibold mb-4">Order History</h2><div id="order-history-container" class="space-y-6"></div></div>
+                    <div class="bg-white p-6 rounded-lg shadow-md"><h2 class="text-xl font-semibold mb-4">Saved Addresses</h2><div id="saved-addresses-container" class="space-y-4"></div></div>
+                    <div class="bg-white p-6 rounded-lg shadow-md"><h2 class="text-xl font-semibold mb-4">Dietary Preferences</h2><div id="dietary-prefs-container" class="space-y-2"></div></div>
+                </div>
+            </div>
+        </div>
+        
         <div id="cart-page" class="page"><div class="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8"><h1 class="text-3xl font-bold text-gray-900 mb-6">Your Cart</h1><div id="cart-items-container" class="bg-white p-6 rounded-lg shadow-md"></div><div id="cart-summary" class="mt-6 bg-white p-6 rounded-lg shadow-md"></div></div></div>
         <div id="order-confirmation-page" class="page"><div class="min-h-[calc(100vh-64px)] flex items-center justify-center"><div class="text-center bg-white p-12 rounded-xl shadow-lg"><div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100"><svg class="h-6 w-6 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></div><h2 class="text-2xl font-bold text-gray-900 mt-4">Order Placed!</h2><p class="text-gray-600 mt-2">You can track its status in your account.</p><div id="confirmation-details" class="text-left mt-4 border-t pt-4"></div><button onclick="app.navigateTo('marketplace')" class="mt-6 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700">Continue Shopping</button></div></div></div>
     </main>
@@ -186,11 +288,17 @@
             cart: [],
             orders: [],
             events: [],
+            archivedDeliveries: [],
+            deliveryArchiveViewMode: 'delivery', // 'delivery' or 'route'
             nextProductId: 1,
             nextOrderId: 1,
             loggedInFarmerId: null,
-            currentUser: null,
-            fulfillmentMethod: "On-Farm Pickup every Saturday, 10am-2pm",
+            currentUser: null, // Will be populated by onboarding
+            // Cart/Fulfillment state
+            fulfillment: {
+                method: 'pickup', // 'pickup' or 'delivery'
+                deliveryFee: 0,
+            },
             filters: {
                 marketplace: { search: '', tags: [], sortBy: 'name' },
                 events: { search: '', type: 'All' }
@@ -202,44 +310,78 @@
             this.setupEventListeners();
             this.updateNav();
             this.populateFarmerLogin();
-            this.navigateTo('home');
+            
+            // Onboarding flow
+            if (this.state.currentUser) {
+                this.navigateTo('home');
+            } else {
+                this.navigateTo('welcome');
+            }
         },
         
         setupEventListeners() {
             document.getElementById('mobile-menu-button').addEventListener('click', this.toggleMobileMenu);
             document.getElementById('product-form').addEventListener('submit', this.handleProductFormSubmit.bind(this));
             document.getElementById('farmer-profile-form').addEventListener('submit', this.handleProfileFormSubmit.bind(this));
+            document.getElementById('user-details-form').addEventListener('submit', this.handleUserOnboarding.bind(this));
         },
 
         loadInitialData() {
             this.state.farms = [
-                { id: 1, name: "Green Valley Farm", story: "A family-run farm committed to sustainable agriculture and providing the freshest organic produce.", distance: 5.2, rating: 4.8, iconColor: 'bg-green-500' },
-                { id: 2, name: "Sunrise Meadows", story: "Home to the happiest pasture-raised chickens and the most delicious eggs you'll ever taste.", distance: 12.5, rating: 4.9, iconColor: 'bg-yellow-500' },
-                { id: 3, name: "Oakwood Butchery", story: "Specializing in high-quality, ethically-raised, grass-fed meats. From our pasture to your plate.", distance: 8.1, rating: 4.7, iconColor: 'bg-red-500' },
-                { id: 4, name: "The Honest Loaf", story: "An artisan bakery using locally-milled grains to create delicious sourdough breads and pastries.", distance: 2.3, rating: 5.0, iconColor: 'bg-orange-500' }
+                { id: 1, name: "Green Valley Farm", story: "A family-run farm committed to sustainable agriculture and providing the freshest organic produce. We believe in working with nature, not against it, to grow food that is both delicious and nutritious.", distance: 5.2, rating: 4.8, iconColor: 'bg-green-500', deliveryDay: 'Friday',
+                  bannerUrl: 'https://images.unsplash.com/photo-1444858291040-5c7f765d9b6a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+                  galleryUrls: [
+                    'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+                    'https://images.unsplash.com/photo-1621109246944-59da34183d94?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+                    'https://images.unsplash.com/photo-1567347372432-ffcef4758838?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+                    'https://images.unsplash.com/photo-1594282486992-2849b388056b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'
+                  ]
+                },
+                { id: 2, name: "Sunrise Meadows", story: "Home to the happiest pasture-raised chickens and the most delicious eggs you'll ever taste. Our hens roam free, foraging on natural grasses and insects, which makes for rich, flavorful eggs.", distance: 12.5, rating: 4.9, iconColor: 'bg-yellow-500', deliveryDay: 'Friday',
+                  bannerUrl: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+                  galleryUrls: [
+                    'https://images.unsplash.com/photo-1587525492458-7e465a38612a?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+                    'https://images.unsplash.com/photo-1516463932442-161167190b3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+                    'https://images.unsplash.com/photo-1620424263158-9a3b2241571d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+                    'https://images.unsplash.com/photo-1598965675385-d80e12a4121a?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'
+                  ]
+                },
+                { id: 3, name: "Oakwood Butchery", story: "Specializing in high-quality, ethically-raised, grass-fed meats. From our pasture to your plate. We manage the entire process to ensure the highest standards of animal welfare and meat quality.", distance: 8.1, rating: 4.7, iconColor: 'bg-red-500', deliveryDay: 'Wednesday',
+                  bannerUrl: 'https://images.unsplash.com/photo-1622322359429-2a9150616180?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+                  galleryUrls: [
+                     'https://images.unsplash.com/photo-1551028150-64b9f398f678?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+                     'https://images.unsplash.com/photo-1603048200543-96b278787f4c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+                     'https://images.unsplash.com/photo-1533038604066-5e045a995388?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+                     'https://images.unsplash.com/photo-1606727504785-641b7f83375c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'
+                  ]
+                },
+                { id: 4, name: "The Honest Loaf", story: "An artisan bakery using locally-milled grains to create delicious sourdough breads and pastries. We use a long-fermentation process which makes our bread more digestible and flavorful.", distance: 22.3, rating: 5.0, iconColor: 'bg-orange-500', deliveryDay: 'Saturday',
+                  bannerUrl: 'https://images.unsplash.com/photo-1533423929938-1e4a302a281e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+                  galleryUrls: [
+                    'https://images.unsplash.com/photo-1584473456385-a74551aa3bcf?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+                    'https://images.unsplash.com/photo-1589458217279-4ae5a6e42137?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+                    'https://images.unsplash.com/photo-1578383316524-41a311a3a419?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+                    'https://images.unsplash.com/photo-1598373182133-52452f741796?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'
+                  ]
+                }
             ];
             const products = [
                 // Green Valley Farm
-                { farmerId: 1, name: "Organic Kale", price: 3.50, unit: "bunch", tracking: "simple", status: "Available", quantity: null, category: "Vegetable", tags: ["organic", "leafy green"] },
-                { farmerId: 1, name: "Heirloom Tomatoes", price: 4.00, unit: "lb", tracking: "simple", status: "Available", quantity: null, category: "Vegetable", tags: ["heirloom", "fresh"] },
-                { farmerId: 1, name: "Sweet Corn", price: 1.00, unit: "ear", tracking: "simple", status: "Available", quantity: null, category: "Vegetable", tags: ["seasonal", "sweet"] },
+                { farmerId: 1, name: "Organic Kale", price: 3.50, unit: "bunch", tracking: "simple", status: "Available", quantity: null, category: "Vegetable", tags: ["organic", "leafy green"], imageUrl: "https://images.unsplash.com/photo-1550482221-9952a26535f2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" },
+                { farmerId: 1, name: "Heirloom Tomatoes", price: 4.00, unit: "lb", tracking: "detailed", status: "Available", quantity: 50, category: "Vegetable", tags: ["heirloom", "fresh"], imageUrl: "https://images.unsplash.com/photo-1561138763-80e1b0c43336?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" },
                 // Sunrise Meadows
-                { farmerId: 2, name: "Pasture-Raised Eggs", price: 6.00, unit: "dozen", tracking: "detailed", status: "Available", quantity: 24, category: "Dairy & Eggs", tags: ["pasture-raised", "organic"] },
-                { farmerId: 2, name: "Free-Range Chicken", price: 15.00, unit: "whole", tracking: "detailed", status: "Available", quantity: 12, category: "Meat", tags: ["pasture-raised"] },
+                { farmerId: 2, name: "Pasture-Raised Eggs", price: 6.00, unit: "dozen", tracking: "detailed", status: "Available", quantity: 24, category: "Dairy & Eggs", tags: ["pasture-raised", "organic", "dairy"], imageUrl: "https://images.unsplash.com/photo-1598965675385-d80e12a4121a?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" },
                 // Oakwood Butchery
-                { farmerId: 3, name: "Grass-Fed Beef Share", price: 250.00, unit: "1/8 share", tracking: "detailed", status: "Pre-Order", quantity: 10, category: "Meat", tags: ["grass-fed", "beef"] },
-                { farmerId: 3, name: "Artisanal Sausages", price: 12.00, unit: "pack", tracking: "detailed", status: "Available", quantity: 30, category: "Meat", tags: ["gluten-free"] },
+                { farmerId: 3, name: "Grass-Fed Ground Beef", price: 10.00, unit: "lb", tracking: "detailed", status: "Available", quantity: 40, category: "Meat", tags: ["grass-fed", "beef"], imageUrl: "https://images.unsplash.com/photo-1603048200543-96b278787f4c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" },
                 // The Honest Loaf
-                { farmerId: 4, name: "Sourdough Bread", price: 8.00, unit: "loaf", tracking: "detailed", status: "Available", quantity: 15, category: "Pantry", tags: ["artisan", "bakery"] },
-                { farmerId: 4, name: "Morning Buns", price: 4.50, unit: "each", tracking: "simple", status: "Available", quantity: null, category: "Pantry", tags: ["bakery", "sweet"] },
+                { farmerId: 4, name: "Sourdough Bread", price: 8.00, unit: "loaf", tracking: "detailed", status: "Available", quantity: 15, category: "Pantry", tags: ["artisan", "bakery"], imageUrl: "https://images.unsplash.com/photo-1534623138342-93a4a6828c4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" },
             ];
             this.state.products = products.map((p, i) => ({ ...p, id: i + 1 }));
             this.state.nextProductId = products.length + 1;
             
             this.state.events = [
-                { id: 1, hostId: 1, hostType: 'farm', name: "Fall Harvest Festival", date: "October 12, 2025", description: "Join Green Valley Farm for a day of apple picking, hayrides, and live music.", featuredProductIds: [2, 3], type: "Festival" },
-                { id: 2, hostId: null, hostType: 'community', name: "Downtown Farmers Market", date: "Every Saturday", description: "Your weekly stop for the freshest goods from multiple local farms.", featuredProductIds: [1, 4, 7, 8], type: "Market" },
-                { id: 3, hostId: 4, hostType: 'farm', name: "Sourdough Workshop", date: "September 20, 2025", description: "Learn the art of sourdough from the experts at The Honest Loaf.", featuredProductIds: [8,9], type: "Workshop"}
+                { id: 1, hostId: 1, hostType: 'farm', name: "Fall Harvest Festival", date: "October 12, 2025", description: "Join Green Valley Farm for a day of apple picking, hayrides, and live music.", featuredProductIds: [2], type: "Festival" },
+                { id: 2, hostId: null, hostType: 'community', name: "Downtown Farmers Market", date: "Every Saturday", description: "Your weekly stop for the freshest goods from multiple local farms.", featuredProductIds: [1, 3, 4, 5], type: "Market" },
             ];
         },
         
@@ -258,9 +400,12 @@
 
             switch(pageId) {
                 case 'farmer-dashboard': this.renderFarmerDashboard(); break;
+                case 'delivery-portal': this.renderDeliveryPortal(); break;
+                case 'driver-view': this.renderDriverView(); break;
+                case 'delivery-archive': this.renderDeliveryArchive(); break;
                 case 'farmer-profile-edit': this.renderFarmerProfileEdit(); break;
                 case 'farm-profile': this.renderFarmProfilePage(param); break;
-                case 'add-product': this.renderProductForm(); break;
+                case 'add-product': this.renderProductForm(param); break;
                 case 'marketplace': this.renderMarketplace(); break;
                 case 'events': this.renderEventsPage(); break;
                 case 'account': this.renderAccountPage(); break;
@@ -287,28 +432,59 @@
             btn.children[1].classList.toggle('hidden', isOpen);
         },
 
-        // --- USER / ACCOUNT MGMT ---
-        handleAccountClick() {
-            if (this.state.currentUser) this.navigateTo('account');
-            else {
-                this.state.currentUser = { id: 101, name: "Local Shopper" };
-                this.updateNav();
-                this.showNotification("You are now logged in!");
+        // --- USER / ACCOUNT MGMT (ENHANCED) ---
+        handleProfileClick() {
+            if (this.state.currentUser) {
                 this.navigateTo('account');
+            } else {
+                this.navigateTo('welcome');
             }
         },
+
+        handleUserOnboarding(event) {
+            event.preventDefault();
+            const name = document.getElementById('user-fullname').value;
+            const address = document.getElementById('user-address').value;
+            const contact = document.getElementById('user-contact').value;
+            
+            this.state.currentUser = {
+                id: 101,
+                name: name,
+                contact: contact,
+                addresses: [
+                    { label: 'Primary', contactName: name, streetAddress: address, city: 'London', postalCode: 'N6A 1A1', deliveryInstructions: 'Leave at front door.' }
+                ],
+                dietary: []
+            };
+            
+            this.updateNav();
+            this.showNotification(`Welcome, ${name}!`);
+            this.navigateTo('marketplace');
+        },
+
         updateNav() {
             const isLoggedIn = !!this.state.currentUser;
-            const text = isLoggedIn ? "My Account" : "Login";
-            document.getElementById('nav-account-link').textContent = text;
-            document.getElementById('mobile-nav-account-link').textContent = text;
-        },
-        renderAccountPage() {
-            const container = document.getElementById('order-history-container');
-            if (!this.state.currentUser) {
-                 container.innerHTML = `<p>Please log in to see your orders.</p>`;
-                 return;
+            const profileLink = document.getElementById('nav-profile-link');
+            const mobileProfileLink = document.getElementById('mobile-nav-profile-link');
+            
+            if (isLoggedIn) {
+                profileLink.innerHTML = "My Profile";
+                mobileProfileLink.innerHTML = "My Profile";
+            } else {
+                profileLink.innerHTML = "Login / Sign Up";
+                mobileProfileLink.innerHTML = "Login / Sign Up";
             }
+        },
+        
+        renderAccountPage() {
+            if (!this.state.currentUser) { this.navigateTo('welcome'); return; }
+            this.renderOrderHistory();
+            this.renderSavedAddresses();
+            this.renderDietaryPrefs();
+        },
+        
+        renderOrderHistory() {
+            const container = document.getElementById('order-history-container');
             const userOrders = this.state.orders.filter(o => o.userId === this.state.currentUser.id);
             if (userOrders.length === 0) {
                  container.innerHTML = `<p>You have not placed any orders yet.</p>`;
@@ -316,8 +492,43 @@
             }
             container.innerHTML = userOrders.slice().reverse().map(order => this.getOrderCardHTML(order, 'user')).join('');
         },
+
+        renderSavedAddresses() {
+            const container = document.getElementById('saved-addresses-container');
+            const { addresses } = this.state.currentUser;
+            const addressesHTML = addresses.map(addr => `
+                <div class="border p-3 rounded-md">
+                    <p class="font-bold">${addr.label}: <span class="font-normal">${addr.contactName}</span></p>
+                    <p class="text-sm text-gray-600">${addr.streetAddress}, ${addr.city}, ${addr.postalCode}</p>
+                </div>
+            `).join('');
+            container.innerHTML = addressesHTML + `<button class="mt-2 text-sm text-green-600 hover:underline">Add new address</button>`;
+        },
+
+        renderDietaryPrefs() {
+            const container = document.getElementById('dietary-prefs-container');
+            const prefs = ['Vegetarian', 'Gluten-Free', 'Dairy-Free', 'Organic'];
+            const { dietary } = this.state.currentUser;
+            container.innerHTML = prefs.map(pref => `
+                <label class="flex items-center">
+                    <input type="checkbox" class="rounded" ${dietary.includes(pref) ? 'checked' : ''} onchange="app.toggleDietaryPref('${pref}')">
+                    <span class="ml-2">${pref}</span>
+                </label>
+            `).join('');
+        },
+
+        toggleDietaryPref(pref) {
+            const index = this.state.currentUser.dietary.indexOf(pref);
+            if (index > -1) {
+                this.state.currentUser.dietary.splice(index, 1);
+            } else {
+                this.state.currentUser.dietary.push(pref);
+            }
+            this.showNotification('Preferences updated!');
+        },
+
         
-        // --- FARMER PORTAL ---
+        // --- FARMER PORTAL (REFACTORED for Multi-Farm Orders) ---
         farmerLogin() {
             const selectedId = document.getElementById('farmer-select').value;
             this.state.loggedInFarmerId = parseInt(selectedId);
@@ -332,13 +543,19 @@
             const farmerProducts = this.state.products.filter(p => p.farmerId === this.state.loggedInFarmerId);
             const productListHTML = farmerProducts.length > 0 ? farmerProducts.map(p => this.getFarmerProductCardHTML(p)).join('') : `<p class="text-gray-500 col-span-full">No products yet.</p>`;
 
-            const farmerOrders = this.state.orders.filter(o => this.getFarmIdFromOrder(o) === this.state.loggedInFarmerId);
-            const orderListHTML = farmerOrders.length > 0 ? `<ul class="divide-y divide-gray-200">${farmerOrders.slice().reverse().map(order => this.getOrderCardHTML(order, 'farmer')).join('')}</ul>` : '<p class="text-gray-500 p-4">No orders received yet.</p>';
+            // REFACTORED Order Logic
+            const farmerSubOrders = this.state.orders.flatMap(order => 
+                order.subOrders
+                    .filter(subOrder => subOrder.farmId === this.state.loggedInFarmerId)
+                    .map(subOrder => ({ ...subOrder, parentOrder: order })) // give access to parent order info
+            );
+            const orderListHTML = farmerSubOrders.length > 0 ? `<ul class="divide-y divide-gray-200">${farmerSubOrders.slice().reverse().map(subOrder => this.getOrderCardHTML(subOrder, 'farmer')).join('')}</ul>` : '<p class="text-gray-500 p-4">No orders received yet.</p>';
 
             content.innerHTML = `
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <h1 class="text-3xl font-bold text-gray-900">${farmer.name} Dashboard</h1>
                     <div>
+                        <button onclick="app.navigateTo('delivery-portal')" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 mr-2">Manage Deliveries</button>
                         <button onclick="app.navigateTo('farmer-profile-edit')" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 mr-2">Edit Profile</button>
                         <button onclick="app.navigateTo('add-product')" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700">Add New Product</button>
                     </div>
@@ -348,13 +565,6 @@
                 <div class="mt-10"><h2 class="text-2xl font-semibold mb-4">Recent Orders</h2><div class="bg-white shadow overflow-hidden sm:rounded-md">${orderListHTML}</div></div>`;
         },
 
-        getFarmIdFromOrder(order) {
-            if (!order.items || order.items.length === 0) return null;
-            const firstProductId = order.items[0].id;
-            const product = this.state.products.find(p => p.id === firstProductId);
-            return product ? product.farmerId : null;
-        },
-
         renderFarmerProfileEdit() {
             const farmer = this.state.farms.find(f => f.id === this.state.loggedInFarmerId);
             const form = document.getElementById('farmer-profile-form');
@@ -362,6 +572,8 @@
                 <input type="hidden" id="farm-id" value="${farmer.id}">
                 <div><label for="farm-name" class="block text-sm font-medium text-gray-700">Farm Name</label><input type="text" id="farm-name" class="mt-1 block w-full rounded-md" value="${farmer.name}" required></div>
                 <div><label for="farm-story" class="block text-sm font-medium text-gray-700">Our Story</label><textarea id="farm-story" rows="4" class="mt-1 block w-full rounded-md">${farmer.story}</textarea></div>
+                <div><label for="farm-banner-url" class="block text-sm font-medium text-gray-700">Banner Image URL</label><input type="text" id="farm-banner-url" class="mt-1 block w-full rounded-md" value="${farmer.bannerUrl || ''}"></div>
+                <div><label for="farm-gallery-urls" class="block text-sm font-medium text-gray-700">Gallery Image URLs (comma-separated)</label><textarea id="farm-gallery-urls" rows="3" class="mt-1 block w-full rounded-md">${(farmer.galleryUrls || []).join(', ')}</textarea></div>
                 <div class="flex justify-end space-x-3">
                     <button type="button" onclick="app.navigateTo('farmer-dashboard')" class="bg-white py-2 px-4 border rounded-md">Cancel</button>
                     <button type="submit" class="bg-green-600 text-white py-2 px-4 rounded-md">Save Profile</button>
@@ -374,11 +586,14 @@
             const farm = this.state.farms.find(f => f.id === farmId);
             farm.name = document.getElementById('farm-name').value;
             farm.story = document.getElementById('farm-story').value;
+            farm.bannerUrl = document.getElementById('farm-banner-url').value;
+            farm.galleryUrls = document.getElementById('farm-gallery-urls').value.split(',').map(url => url.trim()).filter(Boolean);
+
             this.showNotification('Profile updated successfully!');
             this.navigateTo('farmer-dashboard');
         },
 
-        // --- Farm Profile Page ---
+        // --- Farm Profile Page (ENHANCED) ---
         renderFarmProfilePage(farmId) {
             const farm = this.state.farms.find(f => f.id === farmId);
             if (!farm) { this.navigateTo('marketplace'); return; }
@@ -390,16 +605,35 @@
                 return acc;
             }, {});
 
-            const productHTML = Object.entries(productsByCategory).map(([category, prods]) => `
-                <h3 class="text-2xl font-bold text-gray-800 mt-6 mb-4">${category}</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">${prods.map(p => this.getProductCardHTML(p)).join('')}</div>
+            const productHTML = Object.entries(productsByCategory).map(([category, prods], index) => `
+                <div class="product-category-accordion border rounded-lg mb-4">
+                    <div class="accordion-header flex justify-between items-center cursor-pointer p-4 bg-gray-50 hover:bg-gray-100" onclick="app.toggleCategoryAccordion(this)">
+                        <h3 class="text-2xl font-bold text-gray-800">${category}</h3>
+                        <button class="text-sm font-medium text-green-600">Show All</button>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="horizontal-scroll-wrapper p-4">
+                           <div class="flex overflow-x-auto space-x-4 hide-scrollbar">
+                                ${prods.map(p => `<div class="w-64 flex-shrink-0">${this.getProductCardHTML(p)}</div>`).join('')}
+                           </div>
+                        </div>
+                        <div class="grid-view-wrapper p-4">
+                           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                                ${prods.map(p => this.getProductCardHTML(p)).join('')}
+                           </div>
+                        </div>
+                    </div>
+                </div>
             `).join('');
 
             const content = document.getElementById('farm-profile-content');
             content.innerHTML = `
-                <div class="bg-white rounded-lg shadow-lg p-8">
+                <div>
+                    <img class="h-48 md:h-64 w-full object-cover" src="${farm.bannerUrl}" alt="${farm.name} banner">
+                </div>
+                <div class="bg-white rounded-b-lg shadow-lg p-4 sm:p-8">
                     <div class="flex items-center space-x-4">
-                        <div class="w-16 h-16 ${farm.iconColor} rounded-full flex items-center justify-center text-white text-3xl font-bold">${farm.name.charAt(0)}</div>
+                        <div class="w-16 h-16 ${farm.iconColor} rounded-full flex items-center justify-center text-white text-3xl font-bold flex-shrink-0">${farm.name.charAt(0)}</div>
                         <div>
                             <h1 class="text-4xl font-extrabold text-gray-900">${farm.name}</h1>
                             <p class="text-gray-600">${farm.distance} km away | ${farm.rating} ★</p>
@@ -407,13 +641,24 @@
                     </div>
                     <p class="mt-6 text-lg text-gray-700">${farm.story}</p>
                     <div class="mt-8 border-t pt-8">
+                         <h2 class="text-xl font-bold text-gray-900 mb-4">Gallery</h2>
+                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                            ${(farm.galleryUrls || []).map(url => `<img src="${url}" class="rounded-lg w-full h-32 object-cover">`).join('')}
+                         </div>
                         <h2 class="text-3xl font-bold text-gray-900 mb-6">Our Products</h2>
                         ${productHTML || '<p>No products currently available from this farm.</p>'}
                     </div>
                 </div>`;
         },
+
+        toggleCategoryAccordion(headerElement) {
+            const content = headerElement.nextElementSibling;
+            content.classList.toggle('expanded');
+            const button = headerElement.querySelector('button');
+            button.textContent = content.classList.contains('expanded') ? 'Show Less' : 'Show All';
+        },
         
-        // --- Product Form ---
+        // --- Product Form (Unchanged from original logic) ---
         renderProductForm(productId = null) {
             const product = productId ? this.state.products.find(p => p.id === productId) : null;
             document.getElementById('product-form-title').innerText = product ? 'Edit Product' : 'Add New Product';
@@ -422,7 +667,8 @@
                 <input type="hidden" id="product-id" value="${product?.id || ''}">
                 <div><label for="product-name" class="block text-sm font-medium text-gray-700">Product Name</label><input type="text" id="product-name" value="${product?.name || ''}" class="mt-1 block w-full rounded-md" required></div>
                 <div><label for="product-category" class="block text-sm font-medium text-gray-700">Category</label><select id="product-category" class="mt-1 block w-full rounded-md"><option>Vegetable</option><option>Fruit</option><option>Meat</option><option>Dairy & Eggs</option><option>Pantry</option></select></div>
-                <div><label for="product-tags" class="block text-sm font-medium text-gray-700">Tags (comma-separated)</label><input type="text" id="product-tags" value="${product?.tags.join(', ') || ''}" placeholder="e.g. organic, gluten-free" class="mt-1 block w-full rounded-md"></div>
+                 <div><label for="product-image-url" class="block text-sm font-medium text-gray-700">Product Image URL</label><input type="text" id="product-image-url" value="${product?.imageUrl || ''}" class="mt-1 block w-full rounded-md"></div>
+                <div><label for="product-tags" class="block text-sm font-medium text-gray-700">Tags (comma-separated)</label><input type="text" id="product-tags" value="${(product?.tags || []).join(', ')}" placeholder="e.g. organic, gluten-free" class="mt-1 block w-full rounded-md"></div>
                 <div><label for="product-price" class="block text-sm font-medium text-gray-700">Price</label><input type="number" step="0.01" id="product-price" value="${product?.price?.toFixed(2) || ''}" class="mt-1 block w-full rounded-md" placeholder="0.00" required></div>
                 <div><label for="product-unit" class="block text-sm font-medium text-gray-700">Unit</label><input type="text" id="product-unit" value="${product?.unit || ''}" class="mt-1 block w-full rounded-md" placeholder="e.g. lb, bunch" required></div>
                 <fieldset class="space-y-4"><legend class="text-base font-medium">Inventory Tracking</legend>
@@ -450,6 +696,7 @@
                 price: parseFloat(document.getElementById('product-price').value),
                 unit: document.getElementById('product-unit').value,
                 category: document.getElementById('product-category').value,
+                imageUrl: document.getElementById('product-image-url').value,
                 tags: document.getElementById('product-tags').value.split(',').map(t => t.trim()).filter(Boolean),
                 tracking: trackingMethod,
                 farmerId: this.state.loggedInFarmerId,
@@ -477,29 +724,21 @@
             this.navigateTo('farmer-dashboard');
         },
 
-        // --- MARKETPLACE & EVENTS ---
-        handleFilterChange(page, type, value) {
-            this.state.filters[page][type] = value;
-            if (page === 'marketplace') this.renderMarketplace();
-            if (page === 'events') this.renderEventsPage();
-        },
+        // --- MARKETPLACE & EVENTS (ENHANCED FILTERS) ---
         renderMarketplace() {
             const container = document.getElementById('marketplace-farm-list');
             const filtersContainer = document.getElementById('marketplace-filters');
-            const { search, tags, sortBy } = this.state.filters.marketplace;
+            const { search, tags } = this.state.filters.marketplace;
 
-            // Render filters
             const allTags = [...new Set(this.state.products.flatMap(p => p.tags))];
             filtersContainer.innerHTML = `
-                <input type="text" oninput="app.handleFilterChange('marketplace', 'search', this.value)" value="${search}" placeholder="Search farms or products..." class="w-full md:w-1/3 rounded-md border-gray-300">
-                <select onchange="app.handleFilterChange('marketplace', 'sortBy', this.value)" class="w-full md:w-auto rounded-md border-gray-300">
-                    <option value="name" ${sortBy === 'name' ? 'selected' : ''}>Sort by Name</option>
-                    <option value="distance" ${sortBy === 'distance' ? 'selected' : ''}>Sort by Distance</option>
-                    <option value="rating" ${sortBy === 'rating' ? 'selected' : ''}>Sort by Rating</option>
-                </select>
-                <div class="flex-grow flex flex-wrap gap-2 justify-center">${allTags.map(tag => `<button onclick="app.toggleTagFilter('${tag}')" class="${tags.includes(tag) ? 'bg-green-600 text-white' : 'bg-gray-200'} px-3 py-1 rounded-full text-sm">${tag}</button>`).join('')}</div>`;
+                <input type="text" oninput="app.handleFilterChange('marketplace', 'search', this.value)" value="${search}" placeholder="Search farms or products..." class="w-full rounded-md border-gray-300">
+                <div class="relative">
+                    <div class="flex overflow-x-auto space-x-2 py-2 hide-scrollbar">
+                        ${allTags.map(tag => `<button onclick="app.toggleTagFilter('${tag}')" class="flex-shrink-0 ${tags.includes(tag) ? 'bg-green-600 text-white' : 'bg-gray-200'} px-4 py-2 rounded-full text-sm font-medium">${tag}</button>`).join('')}
+                    </div>
+                </div>`;
 
-            // Filter and sort farms
             let filteredFarms = this.state.farms.map(farm => {
                 const farmProducts = this.state.products.filter(p => p.farmerId === farm.id);
                 const matchesSearch = farm.name.toLowerCase().includes(search.toLowerCase()) || farmProducts.some(p => p.name.toLowerCase().includes(search.toLowerCase()));
@@ -507,16 +746,8 @@
                 return (matchesSearch && matchesTags) ? farm : null;
             }).filter(Boolean);
 
-            filteredFarms.sort((a, b) => {
-                if (sortBy === 'distance') return a.distance - b.distance;
-                if (sortBy === 'rating') return b.rating - a.rating;
-                return a.name.localeCompare(b.name);
-            });
-
-            // Render farm list
             container.innerHTML = filteredFarms.map(farm => this.getFarmSectionHTML(farm)).join('') || `<p class="text-center text-gray-500">No farms match your criteria.</p>`;
         },
-        
         toggleTagFilter(tag) {
             const tags = this.state.filters.marketplace.tags;
             const index = tags.indexOf(tag);
@@ -532,17 +763,15 @@
                 acc[p.category].push(p);
                 return acc;
             }, {});
-
             const productHTML = Object.entries(productsByCategory).map(([category, prods]) => `
                 <h3 class="text-xl font-bold text-gray-800 mt-4 mb-2">${category}</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">${prods.map(p => this.getProductCardHTML(p)).join('')}</div>
             `).join('');
-
             return `
             <div class="farm-section bg-white rounded-lg shadow-md expanded" id="farm-${farm.id}">
                 <div class="p-4 flex justify-between items-center cursor-pointer" onclick="app.toggleFarmSection(${farm.id})">
                     <div class="flex items-center space-x-4">
-                        <div class="w-12 h-12 ${farm.iconColor} rounded-full flex items-center justify-center text-white text-2xl font-bold">${farm.name.charAt(0)}</div>
+                        <div class="w-12 h-12 ${farm.iconColor} rounded-full flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">${farm.name.charAt(0)}</div>
                         <div>
                             <h2 class="text-2xl font-bold text-gray-900 hover:text-green-600" onclick="event.stopPropagation(); app.navigateTo('farm-profile', ${farm.id})">${farm.name}</h2>
                             <p class="text-gray-600">${farm.distance} km away | ${farm.rating} ★</p>
@@ -556,9 +785,491 @@
         toggleFarmSection(farmId) {
             document.getElementById(`farm-${farmId}`).classList.toggle('expanded');
         },
+        
+        // --- CART & CHECKOUT (REFACTORED for Inventory & Fulfillment) ---
+        addToCart(productId) {
+            const product = this.state.products.find(p => p.id === productId);
+            if (!product || product.status !== 'Available') {
+                this.showNotification('This product is not available.', 'error');
+                return;
+            }
+            const cartItem = this.state.cart.find(item => item.id === productId);
 
+            // Inventory Check
+            if (product.tracking === 'detailed') {
+                if (product.quantity <= 0) {
+                    this.showNotification('No more stock available.', 'error');
+                    return;
+                }
+                product.quantity--; // Decrement inventory
+            }
+
+            if (cartItem) { cartItem.quantity++; } 
+            else { this.state.cart.push({ ...product, quantity: 1 }); }
+            
+            this.updateCartCount();
+            this.showNotification(`${product.name} added to cart.`);
+            if (product.tracking === 'detailed' && product.quantity <= 0) {
+                 product.status = 'Sold Out';
+                 this.renderMarketplace(); // Re-render to update the button state
+            }
+        },
+
+        renderCart() {
+            const container = document.getElementById('cart-items-container');
+            const summaryContainer = document.getElementById('cart-summary');
+
+            if (this.state.cart.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500">Your cart is empty.</p>';
+                summaryContainer.innerHTML = '';
+                return;
+            }
+
+            let subtotal = this.state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            const cartItemsHTML = this.state.cart.map(item => {
+                const itemTotal = item.price * item.quantity;
+                const product = this.state.products.find(p => p.id === item.id);
+                // The max available is current cart quantity + remaining inventory
+                const maxQuantity = (product && product.tracking === 'detailed') ? item.quantity + product.quantity : '';
+
+                return `
+                <li class="py-4 flex items-center justify-between flex-wrap">
+                    <div class="flex-grow mb-2 sm:mb-0">
+                        <p class="font-semibold">${item.name}</p>
+                        <p class="text-sm text-gray-600">$${item.price.toFixed(2)} / ${item.unit}</p>
+                    </div>
+                    <div class="flex items-center w-full sm:w-auto">
+                        <input type="number" value="${item.quantity}" onchange="app.updateCartQuantity(${item.id}, this.value)" min="1" ${maxQuantity ? `max="${maxQuantity}"` : ''} class="w-16 text-center border-gray-300 rounded-md shadow-sm">
+                        <p class="w-24 text-right font-semibold">$${itemTotal.toFixed(2)}</p>
+                        <button onclick="app.removeFromCart(${item.id})" class="ml-4 text-red-500 hover:text-red-700 text-2xl font-bold">&times;</button>
+                    </div>
+                </li>`;
+            }).join('');
+            container.innerHTML = `<ul class="divide-y divide-gray-200">${cartItemsHTML}</ul>`;
+            
+            // Fulfillment & Summary
+            this.calculateDeliveryFee(); // Ensure fee is up-to-date
+            const { method, deliveryFee } = this.state.fulfillment;
+            const total = subtotal + (method === 'delivery' ? deliveryFee : 0);
+
+            summaryContainer.innerHTML = `
+                <h2 class="text-lg font-semibold mb-4">Order Summary</h2>
+                <div class="space-y-2">
+                    <div class="flex justify-between"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
+                    <div class="flex justify-between"><span>Delivery Fee</span><span>${method === 'delivery' ? `$${deliveryFee.toFixed(2)}` : 'N/A'}</span></div>
+                    <div class="flex justify-between font-bold text-xl border-t pt-2 mt-2"><span>Total</span><span>$${total.toFixed(2)}</span></div>
+                </div>
+                <div class="mt-6">
+                    <h3 class="font-semibold mb-2">Fulfillment Method</h3>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-green-50 has-[:checked]:border-green-400"><input type="radio" name="fulfillment" value="pickup" onchange="app.setFulfillmentMethod(this.value)" ${method === 'pickup' ? 'checked' : ''}> <span class="ml-2">On-Farm Pickup</span></label>
+                        <label class="flex items-center p-3 border rounded-md has-[:checked]:bg-green-50 has-[:checked]:border-green-400"><input type="radio" name="fulfillment" value="delivery" onchange="app.setFulfillmentMethod(this.value)" ${method === 'delivery' ? 'checked' : ''}> <span class="ml-2">Local Delivery</span></label>
+                    </div>
+                </div>
+                <button onclick="app.checkout()" class="mt-6 w-full bg-green-600 text-white font-bold py-3 px-4 rounded-md hover:bg-green-700">Proceed to Checkout</button>
+            `;
+        },
+
+        updateCartQuantity(productId, newQuantityStr) {
+            const newQuantity = parseInt(newQuantityStr);
+            const cartItem = this.state.cart.find(item => item.id === productId);
+            if (!cartItem) return;
+
+            if (newQuantity <= 0) {
+                this.removeFromCart(productId);
+                return;
+            }
+
+            const product = this.state.products.find(p => p.id === productId);
+            if (product && product.tracking === 'detailed') {
+                const quantityChange = newQuantity - cartItem.quantity;
+                if (quantityChange > product.quantity) {
+                    this.showNotification('Not enough stock available.', 'error');
+                    this.renderCart(); // Re-render to show original value
+                    return;
+                }
+                product.quantity -= quantityChange; // Adjust inventory
+            }
+            
+            cartItem.quantity = newQuantity;
+            this.updateCartCount();
+            this.renderCart();
+        },
+
+        removeFromCart(productId) {
+            const cartItemIndex = this.state.cart.findIndex(item => item.id === productId);
+            if (cartItemIndex === -1) return;
+
+            const cartItem = this.state.cart[cartItemIndex];
+            const product = this.state.products.find(p => p.id === productId);
+
+            // Return inventory
+            if (product && product.tracking === 'detailed') {
+                product.quantity += cartItem.quantity;
+                if (product.status === 'Sold Out') product.status = 'Available';
+            }
+            
+            this.state.cart.splice(cartItemIndex, 1);
+            this.updateCartCount();
+            this.renderCart();
+            this.showNotification('Item removed from cart.');
+        },
+        
+        setFulfillmentMethod(method) {
+            this.state.fulfillment.method = method;
+            this.renderCart();
+        },
+        
+        calculateDeliveryFee() {
+            if (this.state.cart.length === 0) {
+                this.state.fulfillment.deliveryFee = 0;
+                return;
+            }
+            // Simplified: fee based on the farm of the first item in cart.
+            const firstItem = this.state.cart[0];
+            const farm = this.state.farms.find(f => f.id === firstItem.farmerId);
+            if (!farm) {
+                 this.state.fulfillment.deliveryFee = 0;
+                 return;
+            }
+            
+            let fee = 5.00; // Base fee
+            if (farm.distance > 15) {
+                fee += (farm.distance - 15); // $1 per km over 15
+            }
+            this.state.fulfillment.deliveryFee = fee;
+        },
+
+        checkout() {
+            if (!this.state.currentUser) { this.navigateTo('welcome'); return; }
+            if (this.state.cart.length === 0) { this.showNotification('Your cart is empty.', 'error'); return; }
+
+            // Group cart items by farmId
+            const itemsByFarm = this.state.cart.reduce((acc, item) => {
+                const farmId = item.farmerId;
+                if (!acc[farmId]) acc[farmId] = [];
+                acc[farmId].push(item);
+                return acc;
+            }, {});
+
+            const subOrders = Object.entries(itemsByFarm).map(([farmId, items]) => ({
+                farmId: parseInt(farmId),
+                items: items,
+                total: items.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                status: 'New',
+                fulfillmentMethod: this.state.fulfillment.method
+            }));
+
+            const subtotal = subOrders.reduce((sum, so) => sum + so.total, 0);
+            const total = subtotal + (this.state.fulfillment.method === 'delivery' ? this.state.fulfillment.deliveryFee : 0);
+
+            const order = {
+                id: this.state.nextOrderId++,
+                userId: this.state.currentUser.id,
+                total: total,
+                date: new Date().toLocaleDateString('en-CA'),
+                subOrders: subOrders,
+            };
+
+            this.state.orders.push(order);
+
+            // Note: Inventory is already decremented when adding to cart. No changes needed here.
+            this.renderOrderConfirmation(order);
+            this.navigateTo('order-confirmation');
+            this.state.cart = [];
+            this.updateCartCount();
+        },
+        renderOrderConfirmation(order) {
+            const detailsContainer = document.getElementById('confirmation-details');
+            let itemsHtml = order.subOrders.flatMap(so => so.items).map(item => `
+                <div class="flex justify-between py-1">
+                    <span>${item.name} (x${item.quantity})</span>
+                    <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                </div>`).join('');
+
+            detailsContainer.innerHTML = `
+                <p><strong>Order ID:</strong> #${order.id}</p>
+                <p><strong>Total:</strong> <span class="font-bold">$${order.total.toFixed(2)}</span></p>
+                <div class="mt-4 border-t pt-2">${itemsHtml}</div>`;
+        },
+
+        // --- DELIVERY MANAGEMENT ---
+        renderDeliveryPortal() {
+            if (!this.state.loggedInFarmerId) { this.navigateTo('farmer-login'); return; }
+            const farm = this.state.farms.find(f => f.id === this.state.loggedInFarmerId);
+            document.getElementById('delivery-day').value = farm.deliveryDay || 'Friday';
+        },
+        saveDeliverySettings() {
+            const farm = this.state.farms.find(f => f.id === this.state.loggedInFarmerId);
+            farm.deliveryDay = document.getElementById('delivery-day').value;
+            this.showNotification('Delivery settings saved!');
+        },
+        renderDriverView(sortMethod = 'route') {
+            if (!this.state.loggedInFarmerId) { this.navigateTo('farmer-login'); return; }
+            
+            let deliveryJobs = this.state.orders.flatMap(order => 
+                order.subOrders
+                    .filter(so => so.farmId === this.state.loggedInFarmerId && so.fulfillmentMethod === 'delivery' && so.status !== 'Fulfilled' && so.status !== 'Cancelled')
+                    .map(so => {
+                        const userAddress = this.state.currentUser.addresses[0]; // Simplification for POC
+                        return { 
+                            ...so, 
+                            parentOrderId: order.id,
+                            parentOrderDate: order.date,
+                            customerName: this.state.currentUser.name,
+                            deliveryAddress: userAddress.streetAddress,
+                            postalCode: userAddress.postalCode,
+                            instructions: userAddress.deliveryInstructions,
+                         };
+                    })
+            );
+
+            // Sort logic
+            if (sortMethod === 'route') {
+                deliveryJobs.sort((a, b) => a.deliveryAddress.localeCompare(b.deliveryAddress));
+            } else if (sortMethod === 'efficiency') {
+                deliveryJobs.sort((a, b) => a.postalCode.localeCompare(b.postalCode));
+            }
+
+            const listContainer = document.getElementById('driver-delivery-list');
+            if (deliveryJobs.length === 0) {
+                listContainer.innerHTML = '<p class="text-center text-gray-500 bg-white p-6 rounded-lg shadow-md">No upcoming deliveries.</p>';
+                return;
+            }
+            listContainer.innerHTML = deliveryJobs.map(job => `
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-lg">${job.customerName}</p>
+                            <p class="text-sm text-gray-600">${job.deliveryAddress} - ${job.postalCode}</p>
+                            <p class="text-sm mt-1"><em>Instructions: ${job.instructions}</em></p>
+                        </div>
+                        <div class="text-right">
+                             <p class="text-sm font-semibold">Order #${job.parentOrderId}-${job.farmId}</p>
+                             <p class="text-sm">${job.status}</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t flex space-x-2">
+                         <button onclick="app.archiveDelivery(${job.parentOrderId}, ${job.farmId})" class="bg-green-500 text-white text-sm font-medium py-1 px-3 rounded-md w-full">Mark as Delivered</button>
+                         <button class="bg-gray-300 text-gray-700 text-sm font-medium py-1 px-3 rounded-md w-full">Upload Photo</button>
+                    </div>
+                </div>
+            `).join('');
+        },
+        sortDeliveries(method) {
+            this.renderDriverView(method);
+        },
+        archiveDelivery(parentOrderId, farmId) {
+            const order = this.state.orders.find(o => o.id === parentOrderId);
+            if (!order) return;
+            const subOrder = order.subOrders.find(so => so.farmId === farmId);
+            if (!subOrder) return;
+            
+            const userAddress = this.state.currentUser.addresses[0]; // Simplification for POC
+            const archivedJob = {
+                ...subOrder,
+                parentOrderId: order.id,
+                parentOrderDate: order.date,
+                customerName: this.state.currentUser.name,
+                deliveryAddress: userAddress.streetAddress,
+                postalCode: userAddress.postalCode,
+                instructions: userAddress.deliveryInstructions,
+                completedAt: new Date().toISOString()
+            };
+
+            this.state.archivedDeliveries.push(archivedJob);
+            subOrder.status = 'Fulfilled';
+
+            this.showNotification(`Order #${parentOrderId}-${farmId} delivered and archived.`);
+            this.renderDriverView(); // Refresh the active list
+        },
+        renderDeliveryArchive() {
+            const listContainer = document.getElementById('delivery-archive-list');
+            const toggleContainer = document.getElementById('archive-view-toggles');
+            const viewMode = this.state.deliveryArchiveViewMode;
+
+            toggleContainer.innerHTML = `
+                <button onclick="app.setArchiveViewMode('delivery')" class="px-4 py-2 text-sm font-medium rounded-md ${viewMode === 'delivery' ? 'bg-green-600 text-white' : 'text-gray-600'}">View by Delivery</button>
+                <button onclick="app.setArchiveViewMode('route')" class="px-4 py-2 text-sm font-medium rounded-md ${viewMode === 'route' ? 'bg-green-600 text-white' : 'text-gray-600'}">View by Route</button>
+            `;
+
+            if (this.state.archivedDeliveries.length === 0) {
+                 listContainer.innerHTML = '<p class="text-center text-gray-500 bg-white p-6 rounded-lg shadow-md">No archived deliveries.</p>';
+                 return;
+            }
+
+            if (viewMode === 'delivery') {
+                const sortedDeliveries = [...this.state.archivedDeliveries].sort((a,b) => new Date(b.completedAt) - new Date(a.completedAt));
+                listContainer.innerHTML = sortedDeliveries.map(job => this.getArchivedDeliveryCardHTML(job)).join('');
+            } else { // 'route' view
+                const routes = this.state.archivedDeliveries.reduce((acc, job) => {
+                    const routeDate = new Date(job.parentOrderDate).toDateString();
+                    if (!acc[routeDate]) acc[routeDate] = [];
+                    acc[routeDate].push(job);
+                    return acc;
+                }, {});
+
+                listContainer.innerHTML = Object.entries(routes).map(([date, deliveries]) => `
+                    <div class="bg-white rounded-lg shadow-md">
+                        <div class="p-4 cursor-pointer" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                            <h3 class="text-lg font-bold">Route: ${date}</h3>
+                            <p class="text-sm text-gray-600">${deliveries.length} deliver${deliveries.length === 1 ? 'y' : 'ies'}</p>
+                        </div>
+                        <div class="border-t p-4 space-y-4 hidden">
+                            ${deliveries.map(job => this.getArchivedDeliveryCardHTML(job, false)).join('')}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        },
+        setArchiveViewMode(mode) {
+            this.state.deliveryArchiveViewMode = mode;
+            this.renderDeliveryArchive();
+        },
+        getArchivedDeliveryCardHTML(job, showDate = true) {
+             return `
+                <div class="bg-gray-50 p-4 rounded-lg border">
+                    ${showDate ? `<p class="text-xs text-gray-500 mb-1">Delivered on ${new Date(job.completedAt).toLocaleString()}</p>` : ''}
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-md">${job.customerName}</p>
+                            <p class="text-sm text-gray-600">${job.deliveryAddress}</p>
+                        </div>
+                        <div class="text-right">
+                             <p class="text-sm font-semibold">Order #${job.parentOrderId}-${job.farmId}</p>
+                             <p class="text-sm text-green-600 font-bold">Fulfilled</p>
+                        </div>
+                    </div>
+                </div>`;
+        },
+
+        // --- HTML TEMPLATES & UTILITIES ---
+        getFarmerProductCardHTML(product) {
+            const statusColor = this.getStatusColor(product.status);
+            return `
+                <div class="bg-white rounded-lg shadow-md p-4 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start">
+                            <h3 class="text-lg font-bold">${product.name}</h3>
+                            <span class="text-sm font-semibold ${statusColor.text} ${statusColor.bg} px-2 py-1 rounded-full">${product.status}</span>
+                        </div>
+                        <p class="text-gray-600">$${product.price.toFixed(2)} / ${product.unit}</p>
+                        <p class="text-sm text-gray-500 mt-2">
+                            Tracking: <span class="font-medium">${product.tracking === 'detailed' ? `Detailed (${product.quantity} left)` : 'Simple'}</span>
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-200 flex space-x-2">
+                        <button onclick="app.navigateTo('add-product', ${product.id})" class="text-sm bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-1 px-3 rounded-md w-full">Edit</button>
+                    </div>
+                </div>
+            `;
+        },
+        getOrderCardHTML(orderData, perspective) {
+            if (perspective === 'user') { // Is a full order object
+                const itemsSummary = orderData.subOrders.flatMap(so => so.items).map(i => `${i.name} (x${i.quantity})`).join(', ');
+                const overallStatus = orderData.subOrders.every(so => so.status === 'Fulfilled') ? 'Fulfilled' : 'In Progress';
+                const statusColor = this.getOrderStatusColor(overallStatus);
+                return `<li class="bg-white p-4 my-2 rounded-lg border flex flex-wrap justify-between items-center">
+                    <div>
+                        <p class="font-bold">Order #${orderData.id}</p>
+                        <p class="text-sm text-gray-600">Date: ${orderData.date}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-lg">$${orderData.total.toFixed(2)}</p>
+                        <span class="text-xs font-semibold ${statusColor.text} ${statusColor.bg} px-2 py-1 rounded-full">${overallStatus}</span>
+                    </div>
+                    <div class="w-full text-sm text-gray-500 mt-2 pt-2 border-t">${itemsSummary}</div>
+                </li>`;
+            } else { // Is a sub-order object for a farmer
+                const subOrder = orderData;
+                const itemsSummary = subOrder.items.map(i => `${i.name} (x${i.quantity})`).join(', ');
+                const statusColor = this.getOrderStatusColor(subOrder.status);
+                const statuses = ['New', 'Processing', 'Ready for Pickup', 'Fulfilled', 'Cancelled'];
+                return `
+                <li class="p-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm font-semibold text-green-700">Order #${subOrder.parentOrder.id}-${subOrder.farmId}</p>
+                            <p class="text-gray-600 text-sm">Date: ${subOrder.parentOrder.date}</p>
+                        </div>
+                        <div class="text-right"><p class="text-lg font-bold">$${subOrder.total.toFixed(2)}</p><span class="text-xs font-semibold ${statusColor.text} ${statusColor.bg} px-2 py-1 rounded-full">${subOrder.status}</span></div>
+                    </div>
+                    <p class="text-sm mt-2 pt-2 border-t">${itemsSummary}</p>
+                    <div class="mt-4 pt-4 border-t">
+                        <label class="text-sm font-medium">Update Status:</label>
+                        <select onchange="app.updateSubOrderStatus(${subOrder.parentOrder.id}, ${subOrder.farmId}, this.value)" class="ml-2 rounded-md text-sm">
+                            ${statuses.map(s => `<option value="${s}" ${s === subOrder.status ? 'selected' : ''}>${s}</option>`).join('')}
+                        </select>
+                    </div>
+                </li>`;
+            }
+        },
+        updateSubOrderStatus(parentOrderId, farmId, newStatus) {
+            const order = this.state.orders.find(o => o.id === parentOrderId);
+            const subOrder = order.subOrders.find(so => so.farmId === farmId);
+            subOrder.status = newStatus;
+            this.showNotification(`Order #${parentOrderId}-${farmId} updated to ${newStatus}.`);
+            this.renderFarmerDashboard();
+            if (document.getElementById('driver-view-page').classList.contains('active')) {
+                this.renderDriverView(); // Also refresh driver view if open
+            }
+        },
+        getProductCardHTML(product, context = 'marketplace') {
+            const statusColor = this.getStatusColor(product.status);
+            const farm = this.state.farms.find(f => f.id === product.farmerId);
+            const isAvailable = product.status === 'Available' && (product.tracking === 'simple' || product.quantity > 0);
+            const buttonClass = context === 'event' ? 'py-1 px-3 text-sm' : 'py-2 px-4 font-bold';
+            return `
+            <div class="bg-white rounded-lg shadow-md overflow-hidden flex flex-col border border-gray-200 h-full">
+                <div class="h-40 bg-gray-200">
+                    <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover">
+                </div>
+                <div class="p-4 flex-grow flex flex-col">
+                    <div class="flex-grow">
+                        <span class="text-xs font-semibold ${statusColor.text} ${statusColor.bg} px-2 py-1 rounded-full">${product.status}</span>
+                        <h3 class="text-lg font-bold text-gray-900 mt-2">${product.name}</h3>
+                        <p class="text-sm text-gray-500 hover:underline cursor-pointer" onclick="app.navigateTo('farm-profile', ${farm.id})">${farm.name}</p>
+                        <p class="mt-2 text-xl font-bold text-gray-800">$${product.price.toFixed(2)} <span class="text-base font-normal text-gray-600">/ ${product.unit}</span></p>
+                        ${product.tracking === 'detailed' ? `<p class="text-sm text-red-600 mt-1">${product.quantity} left in stock</p>` : ''}
+                    </div>
+                    <div class="mt-4">
+                        <button onclick="app.addToCart(${product.id})" class="w-full bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed ${buttonClass}" ${!isAvailable ? 'disabled' : ''}>
+                            ${isAvailable ? 'Add to Cart' : 'Unavailable'}
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        },
+        getStatusColor(status) {
+            switch (status) { case 'Available': return { text: 'text-green-800', bg: 'bg-green-100' }; case 'Sold Out': return { text: 'text-red-800', bg: 'bg-red-100' }; case 'Pre-Order': return { text: 'text-yellow-800', bg: 'bg-yellow-100' }; default: return { text: 'text-gray-800', bg: 'bg-gray-100' }; }
+        },
+        getOrderStatusColor(status) {
+            switch (status) { case 'New': return { text: 'text-blue-800', bg: 'bg-blue-100' }; case 'Processing': return { text: 'text-yellow-800', bg: 'bg-yellow-100' }; case 'Ready for Pickup': return { text: 'text-purple-800', bg: 'bg-purple-100' }; case 'Fulfilled': return { text: 'text-green-800', bg: 'bg-green-100' }; case 'Cancelled': return { text: 'text-red-800', bg: 'bg-red-100' }; default: return { text: 'text-gray-800', bg: 'bg-gray-100' }; }
+        },
+        showNotification(message, type = 'success') {
+            const area = document.getElementById('notification-area');
+            const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+            const notification = document.createElement('div');
+            notification.className = `notification ${bgColor} text-white font-bold py-2 px-4 rounded-lg shadow-lg pointer-events-auto`;
+            notification.textContent = message;
+            area.appendChild(notification);
+            setTimeout(() => { notification.remove(); }, 4000);
+        },
+        updateCartCount() {
+            const totalItems = this.state.cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cart-item-count').textContent = totalItems;
+            document.getElementById('mobile-cart-item-count').textContent = totalItems;
+        },
+        handleTrackingMethodChange() {
+            const method = document.querySelector('input[name="tracking-method"]:checked')?.value;
+            if (!method) return;
+            document.getElementById('detailed-tracking-fields').style.display = method === 'detailed' ? 'block' : 'none';
+            document.getElementById('simple-tracking-fields').style.display = method === 'simple' ? 'block' : 'none';
+        },
+        handleFilterChange(page, type, value) { this.state.filters[page][type] = value; if (page === 'marketplace') this.renderMarketplace(); if (page === 'events') this.renderEventsPage(); },
         renderEventsPage() {
-             const { search, type } = this.state.filters.events;
+            const { search, type } = this.state.filters.events;
             
             const allTypes = ['All', ...new Set(this.state.events.map(e => e.type))];
             document.getElementById('events-filters').innerHTML = `
@@ -575,7 +1286,6 @@
 
             document.getElementById('events-list').innerHTML = filteredEvents.map(event => this.getEventCardHTML(event)).join('') || `<p class="text-center text-gray-500">No events match your criteria.</p>`;
         },
-        
         getEventCardHTML(event) {
             let hostName = "Community Event";
             if (event.hostType === 'farm') {
@@ -594,286 +1304,9 @@
                     <div class="p-6 bg-gray-50"><h3 class="text-lg font-semibold mb-4">Featured Products</h3><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">${featuredProductsHTML || '<p>No featured products.</p>'}</div></div>
                 </div>`;
         },
-        
-        // --- CART & CHECKOUT ---
-        addToCart(productId) {
-            const product = this.state.products.find(p => p.id === productId);
-            if (!product || product.status !== 'Available') {
-                this.showNotification('This product is not available.', 'error');
-                return;
-            }
-            const cartItem = this.state.cart.find(item => item.id === productId);
-            if (product.tracking === 'detailed') {
-                const quantityInCart = cartItem ? cartItem.quantity : 0;
-                if (quantityInCart >= product.quantity) {
-                    this.showNotification('No more stock available.', 'error');
-                    return;
-                }
-            }
-            if (cartItem) { cartItem.quantity++; } 
-            else { this.state.cart.push({ ...product, quantity: 1 }); }
-            
-            this.updateCartCount();
-            this.showNotification(`${product.name} added to cart.`);
-        },
-
-        renderCart() {
-            const container = document.getElementById('cart-items-container');
-            const summaryContainer = document.getElementById('cart-summary');
-            container.innerHTML = '';
-            summaryContainer.innerHTML = '';
-
-            if (this.state.cart.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-500">Your cart is empty.</p>';
-                return;
-            }
-
-            let subtotal = 0;
-            const cartTable = document.createElement('ul');
-            cartTable.className = 'divide-y divide-gray-200';
-
-            this.state.cart.forEach(item => {
-                const itemTotal = item.price * item.quantity;
-                subtotal += itemTotal;
-                const li = document.createElement('li');
-                li.className = 'py-4 flex items-center justify-between flex-wrap';
-                li.innerHTML = `
-                    <div class="flex-grow mb-2 sm:mb-0">
-                        <p class="font-semibold">${item.name}</p>
-                        <p class="text-sm text-gray-600">$${item.price.toFixed(2)} / ${item.unit}</p>
-                    </div>
-                    <div class="flex items-center w-full sm:w-auto">
-                        <input type="number" value="${item.quantity}" onchange="app.updateCartQuantity(${item.id}, this.value)" min="1" ${item.tracking === 'detailed' && item.status === 'Available' ? `max="${item.quantity}"` : ''} class="w-16 text-center border-gray-300 rounded-md shadow-sm">
-                        <p class="w-24 text-right font-semibold">$${itemTotal.toFixed(2)}</p>
-                        <button onclick="app.removeFromCart(${item.id})" class="ml-4 text-red-500 hover:text-red-700 text-2xl font-bold">&times;</button>
-                    </div>
-                `;
-                cartTable.appendChild(li);
-            });
-
-            container.appendChild(cartTable);
-            
-            summaryContainer.innerHTML = `
-                <h2 class="text-lg font-semibold mb-4">Order Summary</h2>
-                <div class="space-y-2">
-                    <div class="flex justify-between">
-                        <span>Subtotal</span>
-                        <span>$${subtotal.toFixed(2)}</span>
-                    </div>
-                    <div class="flex justify-between font-bold text-xl border-t pt-2 mt-2">
-                        <span>Total</span>
-                        <span>$${subtotal.toFixed(2)}</span>
-                    </div>
-                </div>
-                <div class="mt-6">
-                    <h3 class="font-semibold">Fulfillment</h3>
-                    <p class="text-gray-600">${this.state.fulfillmentMethod}</p>
-                </div>
-                <button onclick="app.checkout()" class="mt-6 w-full bg-green-600 text-white font-bold py-3 px-4 rounded-md hover:bg-green-700 focus:outline-none">
-                    Proceed to Checkout
-                </button>
-            `;
-        },
-
-        updateCartQuantity(productId, newQuantity) {
-            const quantity = parseInt(newQuantity);
-            const cartItem = this.state.cart.find(item => item.id === productId);
-            if (!cartItem) return;
-
-            const product = this.state.products.find(p => p.id === productId);
-            let maxQuantity = Infinity;
-            if (product && product.tracking === 'detailed') {
-                maxQuantity = product.quantity;
-            }
-
-            if (quantity <= 0) {
-                this.removeFromCart(productId);
-            } else {
-                cartItem.quantity = Math.min(quantity, maxQuantity);
-            }
-            this.updateCartCount();
-            this.renderCart();
-        },
-
-        removeFromCart(productId) {
-            this.state.cart = this.state.cart.filter(item => item.id !== productId);
-            this.updateCartCount();
-            this.renderCart();
-            this.showNotification('Item removed from cart.');
-        },
-
-        checkout() {
-             if (!this.state.currentUser) {
-                this.showNotification("Please log in to check out.", 'error');
-                this.handleAccountClick(); // Prompt login
-                return;
-            }
-            if (this.state.cart.length === 0) {
-                this.showNotification('Your cart is empty.', 'error'); return;
-            }
-            const order = {
-                id: this.state.nextOrderId++,
-                userId: this.state.currentUser.id,
-                items: [...this.state.cart],
-                total: this.state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-                status: 'New',
-                date: new Date().toLocaleDateString()
-            };
-            this.state.orders.push(order);
-
-             order.items.forEach(cartItem => {
-                const product = this.state.products.find(p => p.id === cartItem.id);
-                if (product && product.tracking === 'detailed') {
-                    product.quantity -= cartItem.quantity;
-                    if (product.quantity <= 0) product.status = 'Sold Out';
-                }
-            });
-            this.renderOrderConfirmation(order);
-            this.navigateTo('order-confirmation');
-            this.state.cart = [];
-            this.updateCartCount();
-        },
-        renderOrderConfirmation(order) {
-            const detailsContainer = document.getElementById('confirmation-details');
-            let itemsHtml = order.items.map(item => `
-                <div class="flex justify-between py-1">
-                    <span>${item.name} (x${item.quantity})</span>
-                    <span>$${(item.price * item.quantity).toFixed(2)}</span>
-                </div>
-            `).join('');
-
-            detailsContainer.innerHTML = `
-                <p><strong>Order ID:</strong> #${order.id}</p>
-                <p><strong>Total:</strong> <span class="font-bold">$${order.total.toFixed(2)}</span></p>
-                <p class="mt-2"><strong>Fulfillment Details:</strong></p>
-                <p class="text-gray-700">${this.state.fulfillmentMethod}</p>
-                <div class="mt-4 border-t pt-2">${itemsHtml}</div>
-            `;
-        },
-
-        // --- HTML TEMPLATES & UTILITIES ---
-        getProductCardHTML(product, context = 'marketplace') {
-            const statusColor = this.getStatusColor(product.status);
-            const farm = this.state.farms.find(f => f.id === product.farmerId);
-            const isAvailable = product.status === 'Available';
-            const buttonClass = context === 'event' ? 'py-1 px-3 text-sm' : 'py-2 px-4 font-bold';
-            
-            return `
-            <div class="bg-white rounded-lg shadow-md overflow-hidden flex flex-col border border-gray-200">
-                <div class="p-4 flex-grow">
-                    <span class="text-xs font-semibold ${statusColor.text} ${statusColor.bg} px-2 py-1 rounded-full">${product.status}</span>
-                    <h3 class="text-lg font-bold text-gray-900 mt-2">${product.name}</h3>
-                    <p class="text-sm text-gray-500">${farm.name}</p>
-                    <p class="mt-2 text-xl font-bold text-gray-800">$${product.price.toFixed(2)} <span class="text-base font-normal text-gray-600">/ ${product.unit}</span></p>
-                    ${product.tracking === 'detailed' ? `<p class="text-sm text-red-600 mt-1">${product.quantity} left in stock</p>` : ''}
-                    <div class="mt-2 flex flex-wrap gap-1">${product.tags.map(t => `<span class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full">${t}</span>`).join('')}</div>
-                </div>
-                <div class="p-4 bg-gray-50">
-                    <button onclick="app.addToCart(${product.id})" class="w-full bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed ${buttonClass}" ${!isAvailable ? 'disabled' : ''}>
-                        ${isAvailable ? 'Add to Cart' : 'Unavailable'}
-                    </button>
-                </div>
-            </div>`;
-        },
-        getFarmerProductCardHTML(product) {
-            const statusColor = this.getStatusColor(product.status);
-            return `
-                <div class="bg-white rounded-lg shadow-md p-4 flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-start">
-                            <h3 class="text-lg font-bold">${product.name}</h3>
-                            <span class="text-sm font-semibold ${statusColor.text} ${statusColor.bg} px-2 py-1 rounded-full">${product.status}</span>
-                        </div>
-                        <p class="text-gray-600">$${product.price.toFixed(2)} / ${product.unit}</p>
-                        <p class="text-sm text-gray-500 mt-2">
-                            Tracking: <span class="font-medium">${product.tracking === 'detailed' ? `Detailed (${product.quantity} left)` : 'Simple'}</span>
-                        </p>
-                    </div>
-                    <div class="mt-4 pt-4 border-t border-gray-200 flex space-x-2">
-                        <button onclick="app.navigateTo('add-product', ${product.id})" class="text-sm bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-1 px-3 rounded-md w-full">Edit</button>
-                        ${product.tracking === 'simple' ? `
-                            <button onclick="app.toggleProductStatus(${product.id})" class="text-sm bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium py-1 px-3 rounded-md w-full">Toggle Status</button>
-                        ` : ''}
-                    </div>
-                </div>
-            `;
-        },
-        getOrderCardHTML(order, perspective) {
-            const itemsSummary = order.items.map(i => `${i.name} (x${i.quantity})`).join(', ');
-            const statusColor = this.getOrderStatusColor(order.status);
-            const statuses = ['New', 'Processing', 'Ready for Pickup', 'Fulfilled', 'Cancelled'];
-
-            const farmerControls = perspective === 'farmer' ? `
-                <div class="mt-4 pt-4 border-t">
-                    <label for="status-select-${order.id}" class="text-sm font-medium text-gray-600">Update Status:</label>
-                    <select id="status-select-${order.id}" onchange="app.updateOrderStatus(${order.id}, this.value)" class="ml-2 rounded-md border-gray-300 shadow-sm text-sm">
-                        ${statuses.map(s => `<option value="${s}" ${s === order.status ? 'selected' : ''}>${s}</option>`).join('')}
-                    </select>
-                </div>
-            ` : '';
-
-             return `
-            <li class="bg-white p-4 my-2 rounded-lg border border-gray-200">
-                <div class="flex flex-col sm:flex-row justify-between sm:items-center">
-                    <div>
-                        <p class="text-sm font-semibold text-green-700">Order #${order.id}</p>
-                        <p class="text-gray-600 text-sm">Date: ${order.date}</p>
-                    </div>
-                    <div class="text-left sm:text-right mt-2 sm:mt-0">
-                        <p class="text-lg font-bold">$${order.total.toFixed(2)}</p>
-                        <span class="text-xs font-semibold ${statusColor.text} ${statusColor.bg} px-2 py-1 rounded-full">${order.status}</span>
-                    </div>
-                </div>
-                <div class="mt-4 border-t pt-2">
-                    <p class="text-sm text-gray-800">${itemsSummary}</p>
-                </div>
-                ${farmerControls}
-            </li>`;
-        },
-        getStatusColor(status) {
-            switch (status) {
-                case 'Available': return { text: 'text-green-800', bg: 'bg-green-100' };
-                case 'Sold Out': return { text: 'text-red-800', bg: 'bg-red-100' };
-                case 'Pre-Order': return { text: 'text-yellow-800', bg: 'bg-yellow-100' };
-                default: return { text: 'text-gray-800', bg: 'bg-gray-100' };
-            }
-        },
-        getOrderStatusColor(status) {
-            switch (status) {
-                case 'New': return { text: 'text-blue-800', bg: 'bg-blue-100' };
-                case 'Processing': return { text: 'text-yellow-800', bg: 'bg-yellow-100' };
-                case 'Ready for Pickup': return { text: 'text-purple-800', bg: 'bg-purple-100' };
-                case 'Fulfilled': return { text: 'text-green-800', bg: 'bg-green-100' };
-                case 'Cancelled': return { text: 'text-red-800', bg: 'bg-red-100' };
-                default: return { text: 'text-gray-800', bg: 'bg-gray-100' };
-            }
-        },
-        showNotification(message, type = 'success') {
-            const area = document.getElementById('notification-area');
-            const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
-            const notification = document.createElement('div');
-            notification.className = `notification ${bgColor} text-white font-bold py-2 px-4 rounded-lg shadow-lg mb-2`;
-            notification.textContent = message;
-            area.appendChild(notification);
-            setTimeout(() => {
-                notification.remove();
-            }, 4000);
-        },
-        updateCartCount() {
-            const totalItems = this.state.cart.reduce((sum, item) => sum + item.quantity, 0);
-            document.getElementById('cart-item-count').textContent = totalItems;
-            document.getElementById('mobile-cart-item-count').textContent = totalItems;
-        },
-        handleTrackingMethodChange() {
-            const method = document.querySelector('input[name="tracking-method"]:checked')?.value;
-            if (!method) return;
-            document.getElementById('detailed-tracking-fields').style.display = method === 'detailed' ? 'block' : 'none';
-            document.getElementById('simple-tracking-fields').style.display = method === 'simple' ? 'block' : 'none';
-        },
     };
 
     window.onload = () => { app.init(); };
     </script>
 </body>
 </html>
-
